@@ -1,0 +1,154 @@
+import pandas as pd
+import os
+import sys
+import warnings
+from concurrent.futures import ProcessPoolExecutor
+
+# ignore some warnings
+warnings.filterwarnings('ignore')
+
+# set path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent = os.path.join(current_dir, "..")
+sys.path.append(parent)
+
+from MLProcess.PycaretWrapper import PycaretWrapper
+
+# ==========================================
+# 1. set data path and model list
+# ==========================================
+DATA_NAME = 'NeuroPeptide' 
+
+# SPLIT_DATA_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
+SPLIT_DATA_PATH = f"../data/featureStat/split_features_{DATA_NAME}_nonormal/"
+# PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}/"
+PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}_nonormal/"
+os.makedirs(PROB_OUTPUT_PATH, exist_ok=True)
+
+# 移除重複的 mlp，替換為 rbfsvm
+MODEL_LIST = [
+    'gbc', 'ridge', 'lr', 'catboost', 'lda', 'ada', 'knn', 'nb', 'et', 
+    'lightgbm', 'rf', 'xgboost', 'mlp', 'dt', 'svm', 'qda', 'rbfsvm'
+]
+
+# ==========================================
+# 2. tune model one by one(feature types * models)
+# ==========================================
+def process_feature_group(f_prefix):
+    """
+    針對單一特徵類別 (例如 AAC) 訓練模型並獲取 Train/Test 機率值
+    """
+    # train_file = f"../data/featureStat/split_features/train/{f_prefix.lower()}_train.csv"
+    # test_file = f"../data/featureStat/split_features/test/{f_prefix.lower()}_test.csv"
+    train_file = os.path.join(SPLIT_DATA_PATH, "train", f"{f_prefix}_train.csv")
+    test_file = os.path.join(SPLIT_DATA_PATH, "test", f"{f_prefix}_test.csv")
+    if not os.path.exists(train_file) or not os.path.exists(test_file):
+        return None, None, None
+
+    train_df = pd.read_csv(train_file, index_col=0)
+    test_df = pd.read_csv(test_file, index_col=0)
+    
+    pycObj = PycaretWrapper()
+    # Initial pycaret, fix sessionID ensure experiment can try again
+    pycObj.doSetup(train_df, sessionID=100)
+    
+    temp_train_probs = pd.DataFrame(index=train_df.index)
+    temp_test_probs = pd.DataFrame(index=test_df.index)
+    
+    print(f"feature being processing: {f_prefix} ...")
+    
+    for model_name in MODEL_LIST:
+        try:
+            # 1. 建立模型並對 Train 與 Test 進行預測
+            model = pycObj.createModelCustom(model_name) 
+            train_pred = pycObj.predictModelCustom(model, data=train_df) 
+            test_pred = pycObj.predictModelCustom(model, data=test_df) 
+            
+            # 2. 動態抓取欄位名稱
+            label_col = 'Label' if 'Label' in train_pred.columns else 'prediction_label'
+            score_col = 'Score' if 'Score' in train_pred.columns else 'prediction_score'
+            
+            if label_col in train_pred.columns and score_col in train_pred.columns:
+                col_name = f"{f_prefix}_{model_name}"
+                
+                # 3. 💡 終極修正：無懼型別的強健判定法！
+                # 將 label 轉為字串，只要是 '1' 或 '1.0' 就判定為預測 Class 1
+                prob_1_train = train_pred.apply(
+                    lambda row: row[score_col] if str(row[label_col]).strip() in ['1', '1.0'] else 1.0 - row[score_col], 
+                    axis=1
+                )
+                temp_train_probs[col_name] = prob_1_train.values
+                
+                prob_1_test = test_pred.apply(
+                    lambda row: row[score_col] if str(row[label_col]).strip() in ['1', '1.0'] else 1.0 - row[score_col], 
+                    axis=1
+                )
+                temp_test_probs[col_name] = prob_1_test.values
+
+            else:
+                print(f"⚠️ 找不到預測欄位，{model_name} 回傳的欄位有: {train_pred.columns.tolist()}")
+
+        except Exception as e:
+            print(f"⚠️ 模型 {model_name} 在特徵 {f_prefix} 上失敗: {e}")
+
+    # 確保回傳所有資料供主進程收集
+    return f_prefix, temp_train_probs, temp_test_probs
+
+# ==========================================
+# 3. concurrent core process
+# ==========================================
+if __name__ == "__main__":
+    
+    train_dir = os.path.join(SPLIT_DATA_PATH, "train")
+    all_files = sorted([f for f in os.listdir(train_dir) if f.endswith("_train.csv")])
+    feature_prefixes = [f.split('_train.csv')[0] for f in all_files]
+
+    print(f"start to train {len(feature_prefixes) * len(MODEL_LIST)} models")
+
+    all_train_prob_dfs = []
+    all_test_prob_dfs = []
+
+    # process feature types
+    with ProcessPoolExecutor(max_workers=12) as executor:
+        futures = [executor.submit(process_feature_group, pref) for pref in feature_prefixes]
+        
+        for future in futures:
+            try:
+                pref, tr_prob, ts_prob = future.result()
+                if tr_prob is not None:
+                    all_train_prob_dfs.append(tr_prob)
+                    all_test_prob_dfs.append(ts_prob)
+            except Exception as e:
+                print(f"🚨 子進程崩潰: {e}")
+
+    # merge all of prob field
+    final_train_prob_df = pd.concat(all_train_prob_dfs, axis=1)
+    final_test_prob_df = pd.concat(all_test_prob_dfs, axis=1)
+
+    # read index 0 to get y seq
+    sample_y = pd.read_csv(os.path.join(train_dir, all_files[0]), index_col=0)['y']
+    final_train_prob_df['y'] = sample_y
+    
+    # 讀取測試集的標籤
+    test_sample_y = pd.read_csv(os.path.join(SPLIT_DATA_PATH, "test", os.listdir(os.path.join(SPLIT_DATA_PATH, "test"))[0]), index_col=0)['y']
+    final_test_prob_df['y'] = test_sample_y
+
+    # 檢查欄位是否存在，若存在則刪除
+    if 'acc_ridge' in final_train_prob_df.columns:
+        final_train_prob_df = final_train_prob_df.drop(columns=['acc_ridge'])
+        print("已從訓練集中刪除 acc_ridge 欄位")
+
+    if 'acc_ridge' in final_test_prob_df.columns:
+        final_test_prob_df = final_test_prob_df.drop(columns=['acc_ridge'])
+        print("已從測試集中刪除 acc_ridge 欄位")
+
+    # store prob table (修正檔名以顯示正確的 test 維度)
+    final_train_prob_df.to_csv(os.path.join(PROB_OUTPUT_PATH, f"train_prob_{final_train_prob_df.shape}.csv"))
+    final_test_prob_df.to_csv(os.path.join(PROB_OUTPUT_PATH, f"test_prob_{final_test_prob_df.shape}.csv"))
+
+    print("\n" + "="*40)
+    print(f"complete!")
+    print(f"prob output train feature dimension: {final_train_prob_df.shape}")
+    print(f"prob output test feature dimension: {final_test_prob_df.shape}")
+    print(f"file already store in: {PROB_OUTPUT_PATH}")
+    print("="*40)
