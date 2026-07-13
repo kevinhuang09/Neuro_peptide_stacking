@@ -1,5 +1,5 @@
 # import environment setting
-import init_env
+import init_env, os, sys
 
 # set concurrent core
 from concurrent.futures import ProcessPoolExecutor
@@ -43,16 +43,16 @@ if __name__ == "__main__": # set entry point
     ldObj = LoadDataset(minSeqLength=5)
     
     print("read fasta file ...")
-    # trainNeg = ldObj.readFasta("../data/neg_train.fasta")
-    # trainPos = ldObj.readFasta("../data/pos_train.fasta")
-    # indpNeg = ldObj.readFasta("../data/neg_test.fasta")
-    # indpPos = ldObj.readFasta("../data/pos_test.fasta")
+    trainNeg = ldObj.readFasta("../data/neg_train.fasta")
+    trainPos = ldObj.readFasta("../data/pos_train.fasta")
+    indpNeg = ldObj.readFasta("../data/neg_test.fasta")
+    indpPos = ldObj.readFasta("../data/pos_test.fasta")
 
     # hemoPI
-    trainNeg = ldObj.readFasta("../data/neg2_train.fasta")
-    trainPos = ldObj.readFasta("../data/pos_train.fasta")
-    indpNeg = ldObj.readFasta("../data/neg2_test.fasta")
-    indpPos = ldObj.readFasta("../data/pos_test.fasta")
+    # trainNeg = ldObj.readFasta("../data/neg2_train.fasta")
+    # trainPos = ldObj.readFasta("../data/pos_train.fasta")
+    # indpNeg = ldObj.readFasta("../data/neg2_test.fasta")
+    # indpPos = ldObj.readFasta("../data/pos_test.fasta")
 
     # clean peptide remove '-'
     def clean(d): return {k: v.replace('-', '').upper() for k, v in d.items() if v}
