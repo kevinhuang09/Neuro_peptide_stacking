@@ -94,7 +94,7 @@ if __name__ == "__main__": # set entry point
     import pandas as pd
 
     df_train = pd.read_csv('../data/featureStat/train_NeuroPeptide_nonormal.csv', index_col=0)
-    df_test = pd.read_csv('../data/featureStat/test_NeuroPeptide_nonormal.csv', index_col=0)
+    df_test = pd.read_csv('../data/featureStat/indp_NeuroPeptide_nonormal.csv', index_col=0)
 
     print(df_train.shape)   # (sample, feature)
     print(df_train.head())
