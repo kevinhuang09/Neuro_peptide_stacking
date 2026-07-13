@@ -43,17 +43,16 @@ if __name__ == "__main__": # set entry point
     ldObj = LoadDataset(minSeqLength=5)
     
     print("read fasta file ...")
-    trainNeg = ldObj.readFasta("../data/neg_train.fasta")
+    # NeuroPeptide
+    trainNeg = ldObj.readFasta("../data/neg2_train.fasta")
     trainPos = ldObj.readFasta("../data/pos_train.fasta")
-    indpNeg = ldObj.readFasta("../data/neg_test.fasta")
+    indpNeg = ldObj.readFasta("../data/neg2_test.fasta")
     indpPos = ldObj.readFasta("../data/pos_test.fasta")
-
-    # hemoPI
-    # trainNeg = ldObj.readFasta("../data/neg2_train.fasta")
-    # trainPos = ldObj.readFasta("../data/pos_train.fasta")
-    # indpNeg = ldObj.readFasta("../data/neg2_test.fasta")
-    # indpPos = ldObj.readFasta("../data/pos_test.fasta")
-
+    # 📄 檔案 [neg2_train.fasta]: 共有 2632 條序列
+    # 📄 檔案 [pos_train.fasta]: 共有 2632 條序列
+    # 📄 檔案 [neg2_test.fasta]: 共有 293 條序列
+    # 📄 檔案 [pos_test.fasta]: 共有 293 條序列
+    
     # clean peptide remove '-'
     def clean(d): return {k: v.replace('-', '').upper() for k, v in d.items() if v}
     tNeg, tPos = clean(trainNeg), clean(trainPos)
