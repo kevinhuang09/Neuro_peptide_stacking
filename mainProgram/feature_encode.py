@@ -52,7 +52,7 @@ if __name__ == "__main__": # set entry point
     # 📄 檔案 [pos_train.fasta]: 共有 2632 條序列
     # 📄 檔案 [neg2_test.fasta]: 共有 293 條序列
     # 📄 檔案 [pos_test.fasta]: 共有 293 條序列
-    
+
     # clean peptide remove '-'
     def clean(d): return {k: v.replace('-', '').upper() for k, v in d.items() if v}
     tNeg, tPos = clean(trainNeg), clean(trainPos)
@@ -87,17 +87,53 @@ if __name__ == "__main__": # set entry point
     delNanIndpDf.to_csv(f'../data/featureStat/indp_{dataName}_{type1}.csv')
     print(f"save {type1} data")
 
+    """
+    diagnosis table without only unique parameter that after faeture encoding
+    but before normalization  
+    """
+    import pandas as pd
+
+    df_train = pd.read_csv('../data/featureStat/train_NeuroPeptide_nonormal.csv', index_col=0)
+    df_test = pd.read_csv('../data/featureStat/test_NeuroPeptide_nonormal.csv', index_col=0)
+
+    print(df_train.shape)   # (sample, feature)
+    print(df_train.head())
+    print(df_test.shape)   # (sample, feature)
+    print(df_test.head())
+
+    nunique_train = df_train.nunique(dropna = False)
+    # dropna = False; nan is also regard as a type
+    constant_cols_train = nunique_train[nunique_train <= 1].index.tolist()
+    nunique_test = df_test.nunique(dropna = False)
+    constant_cols_test = nunique_test[nunique_test <= 1].index.tolist()
+
+    print(f"共 {df_train.shape[1]} 個特徵欄位")
+    print(f"其中只有一種值的欄位有 {len(constant_cols_train)} 個：")
+    print(constant_cols_train)
+    print(f"共 {df_test.shape[1]} 個特徵欄位")
+    print(f"其中只有一種值的欄位有 {len(constant_cols_test)} 個：")
+    print(constant_cols_test)
+
+    df_clean_train = df_train.drop(columns=constant_cols_train)
+    print(f"移除後剩下 {df_clean_train.shape[1]} 個特徵")
+    df_clean_test = df_test.drop(columns=constant_cols_test)
+    print(f"移除後剩下 {df_clean_test.shape[1]} 個特徵")
+
+    df_clean_train.to_csv('../data/featureStat/train_Neuro_nonstd_nonunique.csv')
+    df_clean_test.to_csv('../data/featureStat/test_Neuro_nonstd_nonunique.csv')
+    print("drop unique file already saved")
+
     # Normalization
     normal = "standard"
     nmlzScalerPath = paramPath + f'{dataName}_standardScaler.pkl'
     trainNmlzDf = EncodeAllFeatures.dataNormalization(
-        encodeTrainDf=delNanTrainDf,
+        encodeTrainDf=df_clean_train,
         normalization=normal,
         saveNmlzScalerPklPath=nmlzScalerPath,
         b_loadPkl=False
     )
     indpNmlzDf1 = EncodeAllFeatures.dataNormalization(
-        encodeIndpDf=delNanIndpDf,
+        encodeIndpDf=df_clean_test,
         normalization=normal,
         loadNmlzScalerPklPath=nmlzScalerPath,
         b_loadPkl=True
