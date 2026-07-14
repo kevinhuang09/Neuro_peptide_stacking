@@ -94,7 +94,7 @@ if __name__ == "__main__": # set entry point
     import pandas as pd
 
     df_train = pd.read_csv('../data/featureStat/train_NeuroPeptide_nonormal.csv', index_col=0)
-    df_test = pd.read_csv('../data/featureStat/test_NeuroPeptide_nonormal.csv', index_col=0)
+    df_test = pd.read_csv('../data/featureStat/indp_NeuroPeptide_nonormal.csv', index_col=0)
 
     print(df_train.shape)   # (sample, feature)
     print(df_train.head())
@@ -120,7 +120,7 @@ if __name__ == "__main__": # set entry point
     print(f"移除後剩下 {df_clean_test.shape[1]} 個特徵")
 
     df_clean_train.to_csv('../data/featureStat/train_Neuro_nonstd_nonunique.csv')
-    df_clean_test.to_csv('../data/featureStat/test_Neuro_nonstd_nonunique.csv')
+    df_clean_test.to_csv('../data/featureStat/indp_Neuro_nonstd_nonunique.csv')
     print("drop unique file already saved")
 
     # Normalization
