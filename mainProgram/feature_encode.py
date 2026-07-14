@@ -42,8 +42,10 @@ if __name__ == "__main__": # set entry point
     os.makedirs(paramPath, exist_ok=True)
     os.makedirs(mlDataPath, exist_ok=True)
     dataName = config.DATA_NAME
+    # unique
     process1_f = config.process1_f
     process1_t = config.process1_t
+    # normal
     process2_f = config.process2_f
     process2_t = config.process2_t
     
