@@ -1,6 +1,9 @@
 # import environment setting
 import init_env, os, sys
 
+# import config parameters
+import config
+
 # set concurrent core
 from concurrent.futures import ProcessPoolExecutor
 
@@ -38,7 +41,7 @@ if __name__ == "__main__": # set entry point
     mlDataPath = "../data/mlData/"
     os.makedirs(paramPath, exist_ok=True)
     os.makedirs(mlDataPath, exist_ok=True)
-    dataName = 'NeuroPeptide'
+    dataName = config.DATA_NAME
 
     ldObj = LoadDataset(minSeqLength=5)
     
@@ -81,7 +84,7 @@ if __name__ == "__main__": # set entry point
     delNanTrainDf = FeatureStat.delNan(data=encodeTrainDf, logPath=mlDataPath + "delNanTrain.txt")
     delNanIndpDf = FeatureStat.delNan(data=encodeIndpDf1, logPath=mlDataPath + "delNanIndp.txt")
 
-    type1 = "nonormal"
+    type1 = config.TYPE1
     # save before normal data
     delNanTrainDf.to_csv(f'../data/featureStat/train_{dataName}_{type1}.csv')
     delNanIndpDf.to_csv(f'../data/featureStat/indp_{dataName}_{type1}.csv')
@@ -143,8 +146,8 @@ if __name__ == "__main__": # set entry point
     # trainNmlzDf = trainNmlzDf.drop(columns=['aac_ridge'])
     # indpNmlzDf1 = indpNmlzDf1.drop(columns=['aac_ridge'])
     # store result
-    process2 = "nunique"
-    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{normal}_{process2}.csv')
-    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{normal}_{process2}.csv')
+    process1 = config.process1
+    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{normal}_{process1}.csv')
+    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{normal}_{process1}.csv')
 
     print(f"feature encoding is complete!!!")
