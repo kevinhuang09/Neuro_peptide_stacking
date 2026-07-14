@@ -11,9 +11,10 @@ dataName = config.DATA_NAME
 process1_t = config.process1_t
 process2_t = config.process2_t
 INPUT_PATH = "../data/featureStat/"
+# os.makedirs(INPUT_PATH, exist_ok = True)
 # OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
 OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{dataName}_{process1_t}_{process2_t}/"
-os.mkaedirs(OUTPUT_BASE_PATH, exist_ok = True)
+# os.makedirs(OUTPUT_BASE_PATH, exist_ok = True)
 
 NORMALIZE_METHOD = 'standard'
 
@@ -61,8 +62,7 @@ if __name__ == "__main__":
     # train_path = os.path.join(INPUT_PATH, f"train_{DATA_NAME}_{NORMALIZE_METHOD}.csv")
     # test_path = os.path.join(INPUT_PATH, f"indp_{DATA_NAME}_{NORMALIZE_METHOD}.csv")
     train_path = os.path.join(INPUT_PATH, f"train_{dataName}_{process1_t}_{process2_t}.csv")
-    test_path = os.path.join(INPUT_PATH, f"indp_{process1_t}_{process2_t}.csv")
-
+    test_path = os.path.join(INPUT_PATH, f"indp_{dataName}_{process1_t}_{process2_t}.csv")
 
     print(f"Loading summary table (Data: {dataName})...")
     try:
