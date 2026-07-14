@@ -13,7 +13,8 @@ process2_t = config.process2_t
 INPUT_PATH = "../data/featureStat/"
 # OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
 OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{dataName}_{process1_t}_{process2_t}/"
- 
+os.mkaedirs(OUTPUT_BASE_PATH, exist_ok = True)
+
 NORMALIZE_METHOD = 'standard'
 
 # ==========================================
