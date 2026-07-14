@@ -42,7 +42,11 @@ if __name__ == "__main__": # set entry point
     os.makedirs(paramPath, exist_ok=True)
     os.makedirs(mlDataPath, exist_ok=True)
     dataName = config.DATA_NAME
-
+    process1_f = config.process1_f
+    process1_t = config.process1_t
+    process2_f = config.process2_f
+    process2_t = config.process2_t
+    
     ldObj = LoadDataset(minSeqLength=5)
     
     print("read fasta file ...")
@@ -84,11 +88,10 @@ if __name__ == "__main__": # set entry point
     delNanTrainDf = FeatureStat.delNan(data=encodeTrainDf, logPath=mlDataPath + "delNanTrain.txt")
     delNanIndpDf = FeatureStat.delNan(data=encodeIndpDf1, logPath=mlDataPath + "delNanIndp.txt")
 
-    type1 = config.TYPE1
-    # save before normal data
-    delNanTrainDf.to_csv(f'../data/featureStat/train_{dataName}_{type1}.csv')
-    delNanIndpDf.to_csv(f'../data/featureStat/indp_{dataName}_{type1}.csv')
-    print(f"save {type1} data")
+    # save non normal data
+    delNanTrainDf.to_csv(f'../data/featureStat/train_{dataName}_{process1_f}_{process2_f}.csv')
+    delNanIndpDf.to_csv(f'../data/featureStat/indp_{dataName}_{process1_f}_{process2_f}.csv')
+    print(f"save {process1_f} data")
 
     """
     diagnosis table without only unique parameter that after faeture encoding
@@ -96,8 +99,8 @@ if __name__ == "__main__": # set entry point
     """
     import pandas as pd
 
-    df_train = pd.read_csv('../data/featureStat/train_NeuroPeptide_nonormal.csv', index_col=0)
-    df_test = pd.read_csv('../data/featureStat/indp_NeuroPeptide_nonormal.csv', index_col=0)
+    df_train = pd.read_csv(f'../data/featureStat/train_{dataName}_{process1_f}_{process2_f}.csv', index_col=0)
+    df_test = pd.read_csv(f'../data/featureStat/indp_{dataName}_{process1_f}_{process2_f}.csv', index_col=0)
 
     print(df_train.shape)   # (sample, feature)
     print(df_train.head())
@@ -122,8 +125,8 @@ if __name__ == "__main__": # set entry point
     df_clean_test = df_test.drop(columns=constant_cols_test)
     print(f"移除後剩下 {df_clean_test.shape[1]} 個特徵")
 
-    df_clean_train.to_csv('../data/featureStat/train_Neuro_nonstd_nonunique.csv')
-    df_clean_test.to_csv('../data/featureStat/indp_Neuro_nonstd_nonunique.csv')
+    df_clean_train.to_csv(f'../data/featureStat/train_{dataName}_{process1_t}_{process2_f}.csv')
+    df_clean_test.to_csv(f'../data/featureStat/indp_{dataName}_{process1_t}_{process2_f}.csv')
     print("drop unique file already saved")
 
     # Normalization
@@ -146,8 +149,8 @@ if __name__ == "__main__": # set entry point
     # trainNmlzDf = trainNmlzDf.drop(columns=['aac_ridge'])
     # indpNmlzDf1 = indpNmlzDf1.drop(columns=['aac_ridge'])
     # store result
-    process1 = config.process1
-    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{normal}_{process1}.csv')
-    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{normal}_{process1}.csv')
+
+    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{process1_t}_{process2_t}.csv')
+    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{process1_t}_{process2_t}.csv')
 
     print(f"feature encoding is complete!!!")
