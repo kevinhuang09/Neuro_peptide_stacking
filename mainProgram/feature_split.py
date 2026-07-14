@@ -2,14 +2,17 @@ import pandas as pd
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
+import config
 
 # ==========================================
 # set path
 # ==========================================
-DATA_NAME = 'NeuroPeptide' 
+dataName = config.DATA_NAME
+process1_t = config.process1_t
+process2_t = config.process2_t
 INPUT_PATH = "../data/featureStat/"
 # OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
-OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{DATA_NAME}_nonormal/"
+OUTPUT_BASE_PATH = f"../data/featureStat/split_features_{dataName}_{process1_t}_{process2_t}/"
  
 NORMALIZE_METHOD = 'standard'
 
@@ -56,19 +59,18 @@ def split_task(f_prefix, train_df, test_df):
 if __name__ == "__main__":
     # train_path = os.path.join(INPUT_PATH, f"train_{DATA_NAME}_{NORMALIZE_METHOD}.csv")
     # test_path = os.path.join(INPUT_PATH, f"indp_{DATA_NAME}_{NORMALIZE_METHOD}.csv")
-    type1 = "nonormal"
-    train_path = os.path.join(INPUT_PATH, f"train_{DATA_NAME}_{type1}.csv")
-    test_path = os.path.join(INPUT_PATH, f"indp_{DATA_NAME}_{type1}.csv")
+    train_path = os.path.join(INPUT_PATH, f"train_{dataName}_{process1_t}_{process2_t}.csv")
+    test_path = os.path.join(INPUT_PATH, f"indp_{process1_t}_{process2_t}.csv")
 
 
-    print(f"Loading summary table (Data: {DATA_NAME})...")
+    print(f"Loading summary table (Data: {dataName})...")
     try:
         # read summary table
         full_train = pd.read_csv(train_path, index_col=0)
         full_test = pd.read_csv(test_path, index_col=0)
     except FileNotFoundError:
         print(f"not found summary table file, please ensure output directory exists : {INPUT_PATH}")
-        print(f"except file name : train_{DATA_NAME}_{NORMALIZE_METHOD}.csv")
+        print(f"except file name : train_{dataName}_{NORMALIZE_METHOD}.csv")
         sys.exit(1)
 
 
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     info_file_path = os.path.join(OUTPUT_BASE_PATH, "feature_info.txt")
     try:
         with open(info_file_path, "w", encoding="utf-8") as f:
-            f.write(f"Data Name: {DATA_NAME}\n")
+            f.write(f"Data Name: {dataName}\n")
             f.write(f"Normalize Method: {NORMALIZE_METHOD}\n")
             f.write(f"Total Feature Categories: {len(prefix_list)}\n")
             f.write("-" * 30 + "\n")
