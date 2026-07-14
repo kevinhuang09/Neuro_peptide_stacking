@@ -120,7 +120,7 @@ if __name__ == "__main__": # set entry point
     print(f"移除後剩下 {df_clean_test.shape[1]} 個特徵")
 
     df_clean_train.to_csv('../data/featureStat/train_Neuro_nonstd_nonunique.csv')
-    df_clean_test.to_csv('../data/featureStat/test_Neuro_nonstd_nonunique.csv')
+    df_clean_test.to_csv('../data/featureStat/indp_Neuro_nonstd_nonunique.csv')
     print("drop unique file already saved")
 
     # Normalization
