@@ -143,7 +143,8 @@ if __name__ == "__main__": # set entry point
     # trainNmlzDf = trainNmlzDf.drop(columns=['aac_ridge'])
     # indpNmlzDf1 = indpNmlzDf1.drop(columns=['aac_ridge'])
     # store result
-    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{normal}.csv')
-    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{normal}.csv')
+    process2 = "nunique"
+    trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{normal}_{process2}.csv')
+    indpNmlzDf1.to_csv(f'../data/featureStat/indp_{dataName}_{normal}_{process2}.csv')
 
     print(f"feature encoding is complete!!!")
