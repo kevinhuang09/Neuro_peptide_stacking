@@ -1,31 +1,25 @@
+import init_env, os, sys, config
 import pandas as pd
-import os
-import sys
 import warnings
 from concurrent.futures import ProcessPoolExecutor
 
 # ignore some warnings
 warnings.filterwarnings('ignore')
 
-# set path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent = os.path.join(current_dir, "..")
-sys.path.append(parent)
-
 from MLProcess.PycaretWrapper import PycaretWrapper
 
 # ==========================================
 # 1. set data path and model list
 # ==========================================
-DATA_NAME = 'NeuroPeptide' 
+dataName = config.DATA_NAME
+process2_t = config.process2_t
 
 # SPLIT_DATA_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
-SPLIT_DATA_PATH = f"../data/featureStat/split_features_{DATA_NAME}_nonormal/"
+SPLIT_DATA_PATH = f"../data/featureStat/split_features_{dataName}_{process2_t}/"
 # PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}/"
-PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}_nonormal/"
+PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{dataName}_{process2_t}/"
 os.makedirs(PROB_OUTPUT_PATH, exist_ok=True)
 
-# 移除重複的 mlp，替換為 rbfsvm
 MODEL_LIST = [
     'gbc', 'ridge', 'lr', 'catboost', 'lda', 'ada', 'knn', 'nb', 'et', 
     'lightgbm', 'rf', 'xgboost', 'mlp', 'dt', 'svm', 'qda', 'rbfsvm'
