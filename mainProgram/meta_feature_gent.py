@@ -67,7 +67,7 @@ def process_feature_group(f_prefix):
             if label_col in train_pred.columns and score_col in train_pred.columns:
                 col_name = f"{f_prefix}_{model_name}"
                 
-                # 3. 💡 終極修正：無懼型別的強健判定法！
+                # 3. 無懼型別的強健判定法！
                 # 將 label 轉為字串，只要是 '1' 或 '1.0' 就判定為預測 Class 1
                 prob_1_train = train_pred.apply(
                     lambda row: row[score_col] if str(row[label_col]).strip() in ['1', '1.0'] else 1.0 - row[score_col], 
@@ -82,10 +82,10 @@ def process_feature_group(f_prefix):
                 temp_test_probs[col_name] = prob_1_test.values
 
             else:
-                print(f"⚠️ 找不到預測欄位，{model_name} 回傳的欄位有: {train_pred.columns.tolist()}")
+                print(f"找不到預測欄位，{model_name} 回傳的欄位有: {train_pred.columns.tolist()}")
 
         except Exception as e:
-            print(f"⚠️ 模型 {model_name} 在特徵 {f_prefix} 上失敗: {e}")
+            print(f"模型 {model_name} 在特徵 {f_prefix} 上失敗: {e}")
 
     # 確保回傳所有資料供主進程收集
     return f_prefix, temp_train_probs, temp_test_probs
@@ -115,7 +115,7 @@ if __name__ == "__main__":
                     all_train_prob_dfs.append(tr_prob)
                     all_test_prob_dfs.append(ts_prob)
             except Exception as e:
-                print(f"🚨 子進程崩潰: {e}")
+                print(f"子進程崩潰: {e}")
 
     # merge all of prob field
     final_train_prob_df = pd.concat(all_train_prob_dfs, axis=1)
