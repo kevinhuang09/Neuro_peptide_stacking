@@ -5,7 +5,7 @@ def remove_constant_features(
     df_train : pd.DataFrame, 
     df_test : Optional[pd.DataFrame] = None,
     dropna : bool = False
-) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataaFrame]]:
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     移除 DataFrame 中只有單一獨特值（常數）的特徵欄位。
     
