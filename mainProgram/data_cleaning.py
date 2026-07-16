@@ -28,7 +28,7 @@ def remove_constant_features(
     """
     print(f"start to exceute dropna")
     # find all single value from train set
-    nunique_train = df_train.nunique_(dropna = dropna)
+    nunique_train = df_train.nunique(dropna = dropna)
     constant_cols = nunique_train[nunique_train <= 1].index.tolist()
     
     print(f"訓練集原始特徵數: {df_train.shape[1]}")
