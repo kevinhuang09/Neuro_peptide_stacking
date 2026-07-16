@@ -2,6 +2,7 @@ import init_env, os, sys, config
 import pandas as pd
 import warnings
 from concurrent.futures import ProcessPoolExecutor
+from data_cleaning import remove_constant_features
 
 # ignore some warnings
 warnings.filterwarnings('ignore')
@@ -128,14 +129,8 @@ if __name__ == "__main__":
     test_sample_y = pd.read_csv(os.path.join(SPLIT_DATA_PATH, "test", os.listdir(os.path.join(SPLIT_DATA_PATH, "test"))[0]), index_col=0)['y']
     final_test_prob_df['y'] = test_sample_y
 
-    # # 檢查欄位是否存在，若存在則刪除
-    # if 'acc_ridge' in final_train_prob_df.columns:
-    #     final_train_prob_df = final_train_prob_df.drop(columns=['acc_ridge'])
-    #     print("已從訓練集中刪除 acc_ridge 欄位")
-
-    # if 'acc_ridge' in final_test_prob_df.columns:
-    #     final_test_prob_df = final_test_prob_df.drop(columns=['acc_ridge'])
-    #     print("已從測試集中刪除 acc_ridge 欄位")
+    # remove unique value
+    final_train_prob_df, final_test_prob_df = remove_constant_features(final_train_prob_df, final_test_prob_df, dropna = False)
 
     # store prob table (修正檔名以顯示正確的 test 維度)
     final_train_prob_df.to_csv(os.path.join(PROB_OUTPUT_PATH, f"train_prob_{final_train_prob_df.shape}.csv"))

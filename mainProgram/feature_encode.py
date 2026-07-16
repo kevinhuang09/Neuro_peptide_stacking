@@ -127,9 +127,6 @@ if __name__ == "__main__": # set entry point
         b_loadPkl=True
     )
 
-    # # remove acc_ridge
-    # trainNmlzDf = trainNmlzDf.drop(columns=['aac_ridge'])
-    # indpNmlzDf1 = indpNmlzDf1.drop(columns=['aac_ridge'])
     # store result
 
     trainNmlzDf.to_csv(f'../data/featureStat/train_{dataName}_{process1_t}_{process2_t}.csv')
