@@ -12,12 +12,13 @@ from MLProcess.PycaretWrapper import PycaretWrapper
 # 1. set data path and model list
 # ==========================================
 dataName = config.DATA_NAME
+process1_t = config.process1_t
 process2_t = config.process2_t
 
 # SPLIT_DATA_PATH = f"../data/featureStat/split_features_{DATA_NAME}/"
-SPLIT_DATA_PATH = f"../data/featureStat/split_features_{dataName}_{process2_t}/"
+SPLIT_DATA_PATH = f"../data/featureStat/split_features_{dataName}_{process1_t}_{process2_t}/"
 # PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}/"
-PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{dataName}_{process2_t}/"
+PROB_OUTPUT_PATH = f"../data/mlData/split_features_{dataName}_{process1_t}_{process2_t}/"
 os.makedirs(PROB_OUTPUT_PATH, exist_ok=True)
 
 MODEL_LIST = [
@@ -127,14 +128,14 @@ if __name__ == "__main__":
     test_sample_y = pd.read_csv(os.path.join(SPLIT_DATA_PATH, "test", os.listdir(os.path.join(SPLIT_DATA_PATH, "test"))[0]), index_col=0)['y']
     final_test_prob_df['y'] = test_sample_y
 
-    # 檢查欄位是否存在，若存在則刪除
-    if 'acc_ridge' in final_train_prob_df.columns:
-        final_train_prob_df = final_train_prob_df.drop(columns=['acc_ridge'])
-        print("已從訓練集中刪除 acc_ridge 欄位")
+    # # 檢查欄位是否存在，若存在則刪除
+    # if 'acc_ridge' in final_train_prob_df.columns:
+    #     final_train_prob_df = final_train_prob_df.drop(columns=['acc_ridge'])
+    #     print("已從訓練集中刪除 acc_ridge 欄位")
 
-    if 'acc_ridge' in final_test_prob_df.columns:
-        final_test_prob_df = final_test_prob_df.drop(columns=['acc_ridge'])
-        print("已從測試集中刪除 acc_ridge 欄位")
+    # if 'acc_ridge' in final_test_prob_df.columns:
+    #     final_test_prob_df = final_test_prob_df.drop(columns=['acc_ridge'])
+    #     print("已從測試集中刪除 acc_ridge 欄位")
 
     # store prob table (修正檔名以顯示正確的 test 維度)
     final_train_prob_df.to_csv(os.path.join(PROB_OUTPUT_PATH, f"train_prob_{final_train_prob_df.shape}.csv"))
