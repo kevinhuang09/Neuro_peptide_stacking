@@ -57,7 +57,8 @@ def process_feature_group(f_prefix):
         try:
             # 1. 建立模型並對 Train 與 Test 進行預測
             model = pycObj.createModelCustom(model_name) 
-            train_pred = pycObj.predictModelCustom(model, data=train_df) 
+            train_pred = pycObj.getOOFPredictions(model)  
+            # train_pred = pycObj.predictModelCustom(model, data=train_df) 
             test_pred = pycObj.predictModelCustom(model, data=test_df) 
             
             # 2. 動態抓取欄位名稱

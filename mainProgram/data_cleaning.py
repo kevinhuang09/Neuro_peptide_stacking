@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import Union, Tuple, Optional
 
+# 看數值有無單一只能用train data看
 def remove_constant_features(
     df_train : pd.DataFrame, 
     df_test : Optional[pd.DataFrame] = None,

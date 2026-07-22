@@ -9,7 +9,6 @@ import pandas as pd
 import os
 import sys
 import glob
-import json
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent = os.path.join(current_dir, "..")

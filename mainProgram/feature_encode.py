@@ -1,5 +1,6 @@
 # import environment setting
-import init_env, os, sys
+import init_env
+import os, sys
 
 # import config parameters
 import config
@@ -43,6 +44,7 @@ if __name__ == "__main__": # set entry point
     os.makedirs(mlDataPath, exist_ok=True)
     dataName = config.DATA_NAME
     # unique
+    # adopt config.process1_f not process1_f
     process1_f = config.process1_f
     process1_t = config.process1_t
     # normal
