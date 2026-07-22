@@ -1,3 +1,5 @@
+# 包成一個物件 or struct
+
 DATA_NAME = "Neuro"
 # first unique
 process1_f = "nunique"
