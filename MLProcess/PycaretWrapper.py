@@ -176,6 +176,7 @@ class PycaretWrapper:
             self.finalModelList.append(finalModel)
 
     def doSaveModel(self, path, b_isFinalizedModel=True):
+        os.makedirs(path, exist_ok=True)
         target_list = self.finalModelList if b_isFinalizedModel else self.tunedModelList
         suffix = '_final' if b_isFinalizedModel else '_tuned'
         for model, name in zip(target_list, self.modelNameList):
