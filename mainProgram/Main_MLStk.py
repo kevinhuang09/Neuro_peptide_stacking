@@ -12,52 +12,7 @@ from MLProcess.DrawPlot import DrawPlot
 from lightgbm import LGBMClassifier
 from sklearn.linear_model import LogisticRegression
 from collections import Counter
-
-def changeBinaryFeatureInDf(dataDf):
-    """
-    因為 LightGBM 無法接受 binary feature 以及 int64 type 的 feature, 所以人工處理.
-    binary feature: 隨機挑 1% 來改變數值 (加減 0.01 or 乘上 0.99/1.01)
-    int64 type feature: 手動轉換為 float64 type
-    :param dataDf:
-    :return:
-    """
-    pd.options.mode.chained_assignment = None
-    threshold = len(dataDf.index.tolist()) * (95 / 100)
-    for column in dataDf.columns.to_list():
-        dfUniqueValue = dataDf[column].unique()
-        count_class = Counter(dataDf[column])
-        dfCounterValue = pd.DataFrame.from_dict(count_class, orient='index', columns=["Count"])
-        dfCounterValueSum = dfCounterValue['Count'].nlargest(2).sum()
-        if (dfCounterValueSum >= threshold) and (column != 'y'):
-            value1 = dfCounterValue['Count'].nlargest(2).index.tolist()[0]
-            value2 = dfCounterValue['Count'].nlargest(2).index.tolist()[1]
-            if 0 in dfUniqueValue:
-                convertMaxValue = value1 - 0.01
-                convertMinValue = value2 + 0.01
-                print('Value of ' + str(column) + ' Converted')
-                print(str(value1) + '  --+0.01-->  ' + str(convertMaxValue))
-                print(str(value2) + '  --+0.01-->  ' + str(convertMinValue))
-            else:
-                convertMaxValue = value1 * 0.99
-                convertMinValue = value2 * 1.01
-                print('Value of ' + str(column) + ' Converted')
-                print(str(value1) + '  --*0.99-->  ' + str(convertMaxValue))
-                print(str(value2) + '  --*1.01-->  ' + str(convertMinValue))
-            value1Index = list(dataDf.loc[dataDf[column] == value1].index[:])
-            value2Index = list(dataDf.loc[dataDf[column] == value2].index[:])
-            countMax_int = int(np.ceil(len(value1Index) * 0.1))
-            countMin_int = int(np.ceil(len(value2Index) * 0.1))
-            randomMaxIndex = random.sample(value1Index, countMax_int)
-            randomMinIndex = random.sample(value2Index, countMin_int)
-            dataDf[column].loc[randomMaxIndex] = dataDf[column].loc[randomMaxIndex].replace(value1, convertMaxValue)
-            dataDf[column].loc[randomMinIndex] = dataDf[column].loc[randomMinIndex].replace(value2, convertMinValue)
-        if (dataDf[column].dtype.name == 'int64') and (column != 'y'):
-            dataDf[column] = dataDf[column].astype('float64')
-            print('Type of ' + str(column) + ' Converted')
-            print('int64  ---->  float64')
-
-    return dataDf
-
+from MLProcess.change_binary import changeBinaryFeatureInDf
 
 def voting(dataIndp, loadModelPath, voteNumList, selfTestScoreDf, sortingMeasure):
     dataIndp_X = dataIndp.drop(["y"], axis=1)
@@ -99,8 +54,6 @@ def voting(dataIndp, loadModelPath, voteNumList, selfTestScoreDf, sortingMeasure
 
     return scoreDf, scoreProbDf
 
-#def pepProAna
-
 #####################################################################
 #   '''確定feature數目後做tunedModel & CV用的'''                       #
 #####################################################################
@@ -113,22 +66,35 @@ mlScorePath = "../data/mlScore/"  # 內含 ml model 預測完並算好分的檔�
 # ratioPath = "../data/PeptideProperty/"
 # ratioPicPath = "../data/PeptidePropertyPic/"
 
+print(f"path set is OK")
 
 featNumber = 270
 # test model list
-modelNameList = ['lr', 'rf']
+modelNameList = ['mlp', 'rf']
 
 # modelNameList = ['lightgbm', 'catboost', 'rbfsvm', 'gbc', 'ridge', 'lr', 'lda', 'ada', 'knn', 'nb', 'et', 'rf',
 #                  'xgboost', 'mlp', 'dt', 'svm', 'qda']
 
 dataTrainDf = pd.read_csv(mlDataPath + f'/{featNumber}/' + "train_F" + str(featNumber) + ".csv",
                           index_col=[0])  # 例如檔名為train_F190.csv
+
+print(f"feature file read is OK")
+
 dataTrainDf = changeBinaryFeatureInDf(dataTrainDf)
+
+print(f"change binary is OK")
+
 pycObj = PycaretWrapper()
 setupDf = pycObj.doSetup(trainData=dataTrainDf)
+
+print(f"pycaret warpper setup OK")
+
 # 一般情況建議使用 TPE search
-pycObj.doTuneModel(searchLibrary='optuna', searchAlg='tpe', includeModelList=modelNameList, foldNum=10,
-                   n_iter=100, early_stopping=False, customGridDict=None)
+# pycObj.doTuneModel(searchLibrary='optuna', searchAlg='tpe', includeModelList=modelNameList, foldNum=10,
+#                    n_iter=100, early_stopping=False, customGridDict=None)
+
+pycObj.doTuneModel(searchLibrary='optuna', searchAlg='tpe', includeModelList=modelNameList, foldNum=2,
+                   n_iter=3, early_stopping=False, customGridDict=None)
 # 因為樣本數少，所以最後可改為flodNUM = 20
 
 # 以grid search 做 tune model (通常使用於RBFSVM)
@@ -138,9 +104,14 @@ pycObj.doTuneModel(searchLibrary='optuna', searchAlg='tpe', includeModelList=mod
 # pycObj.doTuneModel(searchLibrary='scikit-learn', searchAlg='grid', includeModelList=['rbfsvm'], foldNum=5,
 #                    n_iter=100, early_stopping=False', customGridDict=customGridDict)
 
+
 pycObj.doSaveModel(tuneModelPath, b_isFinalizedModel=False)  # 儲存tune好的model
+print(f"model save complete")
+
 tunedModelList = pycObj.doLoadModel(tuneModelPath, fileNameList=modelNameList,
                                     b_isFinalizedModel=False)  # 讀取tune好的model
+print(f"load models")
+
 tunedModelParamList, scoreRank = pycObj.doCompareModel(fold=10,
                                                        includeModelList=tunedModelList)  # 用tune好的model去做CV,scoreRank即為CV的表格
 scoreRank.to_csv(mlScorePath + 'cvScore.csv')
@@ -187,31 +158,33 @@ aucDf = drawObj.drawROC(colorList=None, title=False, titleName='Receiver Operati
                         show=True,
                         dpi=300, figSize=(12, 9))
 
-#####################################################################
-#           voting & stacking                                       #
-#####################################################################
+# #####################################################################
+# #           voting & stacking                                       #
+# #####################################################################
 
-clusterNumList = [3, 5, 7, 9, 11]  # [2, 3]
-modelNameList = ['rbfsvm', 'gbc', 'ridge', 'lr', 'catboost', 'lda', 'ada', 'knn', 'nb', 'et', 'lightgbm', 'rf',
-                 'xgboost', 'gpc', 'mlp', 'dt', 'svm', 'qda']
-stackObj = Stacking(loadModelPath=tuneModelPath,
-                    modelNameList=modelNameList,
-                    trainDataPath=mlDataPath + f'/{featNumber}/' + "train_F" + str(featNumber) + ".csv",
-                    testDataPath=mlDataPath + f'/{featNumber}/' + "indp_F" + str(featNumber) + ".csv",
-                    clusterNumList=clusterNumList)
-selfTestScoreDf = stackObj.genSelfTestResult(drawPlot=True)
-selfTestScoreDf.to_csv(mlScorePath + 'selfTestScore.csv')
-stkModelList = stackObj.genStkModel(selfTestScoreLabel='auc', final_estimator=LogisticRegression(), drawPlot=True,
-                                    metric='euclidean', linkageType='ward')
-stkScoreDf = stackObj.stkModelPredictScoring(scoreCsvPath=mlScorePath + 'stkModelScore.csv', drawPlot=True,
-                                             b_isBinary=True)
+# clusterNumList = [3, 5, 7, 9, 11]  # [2, 3]
+# # test models list
+# modelNameList = ['lr']
+# # modelNameList = ['rbfsvm', 'gbc', 'ridge', 'lr', 'catboost', 'lda', 'ada', 'knn', 'nb', 'et', 'lightgbm', 'rf',
+# #                  'xgboost', 'gpc', 'mlp', 'dt', 'svm', 'qda']
+# stackObj = Stacking(loadModelPath=tuneModelPath,
+#                     modelNameList=modelNameList,
+#                     trainDataPath=mlDataPath + f'/{featNumber}/' + "train_F" + str(featNumber) + ".csv",
+#                     testDataPath=mlDataPath + f'/{featNumber}/' + "indp_F" + str(featNumber) + ".csv",
+#                     clusterNumList=clusterNumList)
+# selfTestScoreDf = stackObj.genSelfTestResult(drawPlot=True)
+# selfTestScoreDf.to_csv(mlScorePath + 'selfTestScore.csv')
+# stkModelList = stackObj.genStkModel(selfTestScoreLabel='auc', final_estimator=LogisticRegression(), drawPlot=True,
+#                                     metric='euclidean', linkageType='ward')
+# stkScoreDf = stackObj.stkModelPredictScoring(scoreCsvPath=mlScorePath + 'stkModelScore.csv', drawPlot=True,
+#                                              b_isBinary=True)
 
-voteNumList = [3, 5, 7, 9, 11]
-scoreVoteDfIndp, scoreVoteProbDfIndp = voting(dataIndp=dataIndp,
-                                              loadModelPath=finalModelPath,
-                                              voteNumList=voteNumList,
-                                              selfTestScoreDf=selfTestScoreDf,
-                                              sortingMeasure='mcc')
+# voteNumList = [3, 5, 7, 9, 11]
+# scoreVoteDfIndp, scoreVoteProbDfIndp = voting(dataIndp=dataIndp,
+#                                               loadModelPath=finalModelPath,
+#                                               voteNumList=voteNumList,
+#                                               selfTestScoreDf=selfTestScoreDf,
+#                                               sortingMeasure='mcc')
 
-scoreVoteDfIndp.to_csv(mlScorePath + 'VoteScorePred.csv')
-scoreVoteProbDfIndp.to_csv(mlScorePath + 'VoteScoreProb.csv')
+# scoreVoteDfIndp.to_csv(mlScorePath + 'VoteScorePred.csv')
+# scoreVoteProbDfIndp.to_csv(mlScorePath + 'VoteScoreProb.csv')
