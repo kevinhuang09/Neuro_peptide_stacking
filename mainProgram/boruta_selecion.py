@@ -74,33 +74,33 @@ brtObj = encodeObj.dataBoruta(
 )
 
 # --- 4. 評估最佳特徵數量 
-eval_end = min(300, len(train_feats))
-encodeObj.dataEvalFeatureNum(
-    startNum=50,
-    endNum=eval_end,
-    step=20,
-    featNumScorePath=mlDataPath,
-    saveCsvPath=mlDataPath,
-    trainDf=train_df,
-    indpDf=indp_df,
-    brtObj=brtObj,
-    foldNum=10,
-    session=100
-)
+# eval_end = min(300, len(train_feats))
+# encodeObj.dataEvalFeatureNum(
+#     startNum=50,
+#     endNum=eval_end,
+#     step=20,
+#     featNumScorePath=mlDataPath,
+#     saveCsvPath=mlDataPath,
+#     trainDf=train_df,
+#     indpDf=indp_df,
+#     brtObj=brtObj,
+#     foldNum=10,
+#     session=100
+# )
 print("評估完成！請查看 evalFeatureNumScore.csv 決定最佳 featureNum")
 print(f"   （檔案位置：{mlDataPath}evalFeatureNumScore.csv）")
 
 # --- 5. 決定最終數量並產出 CSV 
 # 看完 evalFeatureNumScore.csv 後，把 best_num 改成分數最高的維度，再解除下面註解跑一次
 #
-# best_num = 270   # ← 改成你從 evalFeatureNumScore.csv 選出的最佳數量
-# print(f"最終決定選取前 {best_num} 個特徵並產出 Final Dataset...")
-# encodeObj.dataDecidedFeatureNum(
-#     featureNum=best_num,
-#     saveCsvPath=mlDataPath,
-#     trainDf=train_df,
-#     indpDf=indp_df,
-#     brtObj=brtObj
-# )
-# print(f"\n Boruta 流程完成！")
-# print(f"最終特徵表已存至: {mlDataPath}train_F{best_num}.csv")
+best_num = 270   # ← 改成你從 evalFeatureNumScore.csv 選出的最佳數量
+print(f"最終決定選取前 {best_num} 個特徵並產出 Final Dataset...")
+encodeObj.dataDecidedFeatureNum(
+    featureNum=best_num,
+    saveCsvPath=mlDataPath,
+    trainDf=train_df,
+    indpDf=indp_df,
+    brtObj=brtObj
+)
+print(f"\n Boruta 流程完成！")
+print(f"最終特徵表已存至: {mlDataPath}train_F{best_num}.csv")
