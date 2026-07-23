@@ -17,6 +17,11 @@ SPLIT_DATA_PATH = f"../data/featureStat/split_features_{dataName}_{process1_t}_{
 # PROB_OUTPUT_PATH = f"../data/mlData/prob_tables_features_{DATA_NAME}/"
 PROB_OUTPUT_PATH = f"../data/mlData/split_features_{dataName}_{process1_t}_{process2_t}/"
 os.makedirs(PROB_OUTPUT_PATH, exist_ok=True)
+# test use models
+# MODEL_LIST = [
+#     'et', 'rf', 'xgboost'
+# ]
+
 MODEL_LIST = [
     'gbc', 'ridge', 'lr', 'catboost', 'lda', 'ada', 'knn', 'nb', 'et',
     'lightgbm', 'rf', 'xgboost', 'mlp', 'dt', 'svm', 'qda', 'rbfsvm'
@@ -104,11 +109,32 @@ def process_feature_group(f_prefix):
 # 3. concurrent core process
 # ==========================================
 if __name__ == "__main__":
+    # test run feature type
     train_dir = os.path.join(SPLIT_DATA_PATH, "train")
     all_files = sorted([f for f in os.listdir(train_dir) if f.endswith("_train.csv")])
     feature_prefixes = [f.split('_train.csv')[0] for f in all_files]
 
+    # ==========================================
+    # ★ DEBUG MODE：只跑指定的幾種特徵類別加快測試 ★
+    # 正式跑全部時，把 DEBUG_MODE 設回 False 即可，
+    # 不需要改動 feature_prefixes 抓取邏輯本身。
+    # ==========================================
+    DEBUG_MODE = False
+    DEBUG_FEATURE_LIST = ['aac', 'dpc', 'ctd'] 
+
+    if DEBUG_MODE:
+        feature_prefixes = [p for p in feature_prefixes if p.lower() in DEBUG_FEATURE_LIST]
+        print(f"[DEBUG MODE] 只測試以下特徵類別: {feature_prefixes}")
+
     print(f"start to train {len(feature_prefixes) * len(MODEL_LIST)} models")
+
+
+
+    # train_dir = os.path.join(SPLIT_DATA_PATH, "train")
+    # all_files = sorted([f for f in os.listdir(train_dir) if f.endswith("_train.csv")])
+    # feature_prefixes = [f.split('_train.csv')[0] for f in all_files]
+
+    # print(f"start to train {len(feature_prefixes) * len(MODEL_LIST)} models")
 
     all_train_prob_dfs = []
     all_test_prob_dfs = []

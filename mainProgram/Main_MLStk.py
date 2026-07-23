@@ -115,8 +115,11 @@ mlScorePath = "../data/mlScore/"  # 內含 ml model 預測完並算好分的檔�
 
 
 featNumber = 270
-modelNameList = ['lightgbm', 'catboost', 'rbfsvm', 'gbc', 'ridge', 'lr', 'lda', 'ada', 'knn', 'nb', 'et', 'rf',
-                 'xgboost', 'mlp', 'dt', 'svm', 'qda']
+# test model list
+modelNameList = ['lr', 'rf']
+
+# modelNameList = ['lightgbm', 'catboost', 'rbfsvm', 'gbc', 'ridge', 'lr', 'lda', 'ada', 'knn', 'nb', 'et', 'rf',
+#                  'xgboost', 'mlp', 'dt', 'svm', 'qda']
 
 dataTrainDf = pd.read_csv(mlDataPath + f'/{featNumber}/' + "train_F" + str(featNumber) + ".csv",
                           index_col=[0])  # 例如檔名為train_F190.csv
